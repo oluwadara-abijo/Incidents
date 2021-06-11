@@ -17,6 +17,10 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.firebase.database.ChildEventListener
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 
@@ -28,6 +32,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var incidentPosition: LatLng
     private lateinit var incidentTypes: Array<IncidentType>
     private lateinit var selectedIncidentType: IncidentType
+    private lateinit var allIncidents: ArrayList<Incident>
+    private lateinit var firebaseDatabaseReference: DatabaseReference
+    private lateinit var childEventListener: ChildEventListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,10 +60,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
-        // Add a marker in Sydney and move the camera
-        val sydney = LatLng(6.5244, 3.3792)
-        mMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+        // Add a marker in Lagos and move the camera
+        val lagos = LatLng(6.5244, 3.3792)
+        mMap.addMarker(MarkerOptions().position(lagos).title("Marker in Lagos"))
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(lagos))
 
         // Set click listener on map
         mMap.setOnMapClickListener {
@@ -64,6 +71,38 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             showIncidentDialog()
         }
 
+        retrieveIncidents()
+
+    }
+
+    private fun retrieveIncidents() {
+        firebaseDatabaseReference = Firebase.database.reference.child("incidents")
+        allIncidents = arrayListOf()
+        childEventListener = object : ChildEventListener {
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                val incident = snapshot.getValue(Incident::class.java)
+                if (incident != null) {
+                    allIncidents.add(incident)
+                }
+                for (everyIncident in allIncidents) {
+                    addMarker(everyIncident)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+            }
+
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
+            }
+
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+            }
+
+            override fun onChildRemoved(snapshot: DataSnapshot) {
+            }
+
+        }
+        firebaseDatabaseReference.addChildEventListener(childEventListener)
     }
 
     private fun showIncidentDialog() {
@@ -80,29 +119,34 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val incidentNames = incidentTypes.map { it.name }
         MaterialAlertDialogBuilder(this)
             .setTitle(resources.getString(R.string.select_incident_type))
-            .setNeutralButton(resources.getString(R.string.cancel)) { dialog, which ->
+            .setNeutralButton(resources.getString(R.string.cancel)) { dialog, _ ->
                 // Respond to neutral button press
                 dialog.dismiss()
             }
-            .setPositiveButton(resources.getString(R.string.ok)) { dialog, which ->
+            .setPositiveButton(resources.getString(R.string.ok)) { dialog, _ ->
                 // Add marker to Map
-                addMarker()
+                val incident = Incident(
+                    incidentPosition.latitude,
+                    incidentPosition.longitude,
+                    selectedIncidentType
+                )
+                addMarker(incident)
+                saveIncident(incident)
                 dialog.dismiss()
             }
             // Single-choice items (initialized with checked item)
-            .setSingleChoiceItems(incidentNames.toTypedArray(), checkedItem) { dialog, which ->
+            .setSingleChoiceItems(incidentNames.toTypedArray(), checkedItem) { _, which ->
                 // Respond to item chosen
                 selectedIncidentType = incidentTypes[which]
             }
             .show()
     }
 
-    private fun addMarker() {
+    private fun addMarker(incident: Incident) {
         mMap.addMarker(MarkerOptions().apply {
-            position(incidentPosition)
-            icon(bitmapDescriptorFromVector(this@MapsActivity, selectedIncidentType.icon))
+            position(LatLng(incident.latitude!!, incident.longitude!!))
+            icon(bitmapDescriptorFromVector(this@MapsActivity, incident.incidentType!!.icon!!))
         })
-        saveIncident(Incident(incidentPosition, selectedIncidentType))
 
     }
 
@@ -120,8 +164,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun saveIncident(incident: Incident) {
-        val database = Firebase.database.reference
-        database.child("incidents").push().setValue(incident).addOnCompleteListener {
+        firebaseDatabaseReference.push().setValue(incident).addOnCompleteListener {
             Toast.makeText(this, "Incident saved", Toast.LENGTH_SHORT).show()
         }
 

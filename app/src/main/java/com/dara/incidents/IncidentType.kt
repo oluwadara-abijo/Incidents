@@ -5,5 +5,8 @@ package com.dara.incidents
  * @param name - The name of the incident e.g accident, fire etc
  * @param icon - The icon for the incident type
  */
-class IncidentType (val name : String, val icon : Int) {
+class IncidentType(
+    val name: String? = "Others",
+    val icon: Int? = R.drawable.ic_baseline_not_listed_location
+) {
 }
