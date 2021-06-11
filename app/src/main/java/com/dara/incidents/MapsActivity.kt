@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.dara.incidents.databinding.ActivityMapsBinding
+import com.dara.incidents.utils.NetworkUtils
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -35,6 +36,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var allIncidents: ArrayList<Incident>
     private lateinit var firebaseDatabaseReference: DatabaseReference
     private lateinit var childEventListener: ChildEventListener
+    private lateinit var networkUtils: NetworkUtils
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +47,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+
+        networkUtils = NetworkUtils(this)
 
     }
 
@@ -76,33 +80,41 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun retrieveIncidents() {
-        firebaseDatabaseReference = Firebase.database.reference.child("incidents")
-        allIncidents = arrayListOf()
-        childEventListener = object : ChildEventListener {
-            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                val incident = snapshot.getValue(Incident::class.java)
-                if (incident != null) {
-                    allIncidents.add(incident)
+        if (networkUtils.isNetworkAvailable()) {
+            firebaseDatabaseReference = Firebase.database.reference.child("incidents")
+            allIncidents = arrayListOf()
+            childEventListener = object : ChildEventListener {
+                override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                    val incident = snapshot.getValue(Incident::class.java)
+                    if (incident != null) {
+                        allIncidents.add(incident)
+                    }
+                    for (everyIncident in allIncidents) {
+                        addMarker(everyIncident)
+                    }
                 }
-                for (everyIncident in allIncidents) {
-                    addMarker(everyIncident)
+
+                override fun onCancelled(error: DatabaseError) {
                 }
-            }
 
-            override fun onCancelled(error: DatabaseError) {
-            }
+                override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
+                }
 
-            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
-            }
+                override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+                }
 
-            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-            }
+                override fun onChildRemoved(snapshot: DataSnapshot) {
+                }
 
-            override fun onChildRemoved(snapshot: DataSnapshot) {
             }
-
+            firebaseDatabaseReference.addChildEventListener(childEventListener)
+        } else {
+            Toast.makeText(
+                this,
+                getString(R.string.connect_to_internet),
+                Toast.LENGTH_SHORT
+            ).show()
         }
-        firebaseDatabaseReference.addChildEventListener(childEventListener)
     }
 
     private fun showIncidentDialog() {
