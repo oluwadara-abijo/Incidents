@@ -24,8 +24,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var mMap: GoogleMap
     private lateinit var binding: ActivityMapsBinding
     private lateinit var incidentPosition: LatLng
-    private lateinit var incidents: Array<Incident>
-    private lateinit var selectedIncident: Incident
+    private lateinit var incidentTypes: Array<IncidentType>
+    private lateinit var selectedIncidentType: IncidentType
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,17 +65,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun showIncidentDialog() {
-        incidents = arrayOf(
-            Incident("Accident", R.drawable.ic_baseline_dangerous),
-            Incident("Road blocked", R.drawable.ic_baseline_block),
-            Incident("Crime/Theft", R.drawable.ic_baseline_directions_run),
-            Incident("Road construction", R.drawable.ic_baseline_construction),
-            Incident("Fire", R.drawable.ic_baseline_local_fire_department),
-            Incident("Others", R.drawable.ic_baseline_not_listed_location)
+        incidentTypes = arrayOf(
+            IncidentType("Accident", R.drawable.ic_baseline_dangerous),
+            IncidentType("Road blocked", R.drawable.ic_baseline_block),
+            IncidentType("Crime/Theft", R.drawable.ic_baseline_directions_run),
+            IncidentType("Road construction", R.drawable.ic_baseline_construction),
+            IncidentType("Fire", R.drawable.ic_baseline_local_fire_department),
+            IncidentType("Others", R.drawable.ic_baseline_not_listed_location)
         )
         val checkedItem = 0
-        selectedIncident = incidents[checkedItem]
-        val incidentNames = incidents.map { it.name }
+        selectedIncidentType = incidentTypes[checkedItem]
+        val incidentNames = incidentTypes.map { it.name }
         MaterialAlertDialogBuilder(this)
             .setTitle(resources.getString(R.string.select_incident_type))
             .setNeutralButton(resources.getString(R.string.cancel)) { dialog, which ->
@@ -90,8 +90,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             // Single-choice items (initialized with checked item)
             .setSingleChoiceItems(incidentNames.toTypedArray(), checkedItem) { dialog, which ->
                 // Respond to item chosen
-                selectedIncident = incidents[which]
-                Toast.makeText(this, selectedIncident.name, Toast.LENGTH_SHORT).show()
+                selectedIncidentType = incidentTypes[which]
+                Toast.makeText(this, selectedIncidentType.name, Toast.LENGTH_SHORT).show()
             }
             .show()
     }
@@ -99,7 +99,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun addMarker() {
         mMap.addMarker(MarkerOptions().apply {
             position(incidentPosition)
-            icon(bitmapDescriptorFromVector(this@MapsActivity, selectedIncident.icon))
+            icon(bitmapDescriptorFromVector(this@MapsActivity, selectedIncidentType.icon))
         })
 
     }
