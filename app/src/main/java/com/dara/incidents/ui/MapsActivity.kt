@@ -122,12 +122,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun showIncidentDialog() {
         incidentTypes = arrayOf(
-            IncidentType("Accident", R.drawable.ic_baseline_dangerous),
-            IncidentType("Road blocked", R.drawable.ic_baseline_block),
-            IncidentType("Crime/Theft", R.drawable.ic_baseline_directions_run),
-            IncidentType("Road construction", R.drawable.ic_baseline_construction),
-            IncidentType("Fire", R.drawable.ic_baseline_local_fire_department),
-            IncidentType("Others", R.drawable.ic_baseline_not_listed_location)
+            IncidentType(getString(R.string.accident), R.drawable.ic_baseline_dangerous),
+            IncidentType(getString(R.string.road_blocked), R.drawable.ic_baseline_block),
+            IncidentType(getString(R.string.crime), R.drawable.ic_baseline_directions_run),
+            IncidentType(getString(R.string.construction), R.drawable.ic_baseline_construction),
+            IncidentType(getString(R.string.fire), R.drawable.ic_baseline_local_fire_department),
+            IncidentType(getString(R.string.others), R.drawable.ic_baseline_not_listed_location)
         )
         val checkedItem = 0
         selectedIncidentType = incidentTypes[checkedItem]
@@ -180,7 +180,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun saveIncident(incident: Incident) {
         firebaseDatabaseReference.push().setValue(incident).addOnCompleteListener {
-            Toast.makeText(this, "Incident saved", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.incident_saved), Toast.LENGTH_SHORT).show()
         }
 
     }
