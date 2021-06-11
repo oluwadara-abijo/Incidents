@@ -17,6 +17,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -91,7 +93,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .setSingleChoiceItems(incidentNames.toTypedArray(), checkedItem) { dialog, which ->
                 // Respond to item chosen
                 selectedIncidentType = incidentTypes[which]
-                Toast.makeText(this, selectedIncidentType.name, Toast.LENGTH_SHORT).show()
             }
             .show()
     }
@@ -101,6 +102,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             position(incidentPosition)
             icon(bitmapDescriptorFromVector(this@MapsActivity, selectedIncidentType.icon))
         })
+        saveIncident(Incident(incidentPosition, selectedIncidentType))
 
     }
 
@@ -115,5 +117,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val canvas = Canvas(bitmap)
         vectorDrawable.draw(canvas)
         return BitmapDescriptorFactory.fromBitmap(bitmap)
+    }
+
+    private fun saveIncident(incident: Incident) {
+        val database = Firebase.database.reference
+        database.child("incidents").push().setValue(incident).addOnCompleteListener {
+            Toast.makeText(this, "Incident saved", Toast.LENGTH_SHORT).show()
+        }
+
     }
 }
