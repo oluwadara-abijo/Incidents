@@ -1,4 +1,4 @@
-package com.dara.incidents
+package com.dara.incidents.ui
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -7,6 +7,9 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.dara.incidents.R
+import com.dara.incidents.data.Incident
+import com.dara.incidents.data.IncidentType
 import com.dara.incidents.databinding.ActivityMapsBinding
 import com.dara.incidents.utils.NetworkUtils
 import com.google.android.gms.maps.CameraUpdateFactory

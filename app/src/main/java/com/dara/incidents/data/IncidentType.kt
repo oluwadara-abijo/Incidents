@@ -1,4 +1,6 @@
-package com.dara.incidents
+package com.dara.incidents.data
+
+import com.dara.incidents.R
 
 /**
  * This data class represents an incident type

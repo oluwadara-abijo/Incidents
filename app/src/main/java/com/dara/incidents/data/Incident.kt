@@ -1,6 +1,4 @@
-package com.dara.incidents
-
-import com.google.android.gms.maps.model.LatLng
+package com.dara.incidents.data
 
 /**
  * This data class represents an incident. Each incident is a JSON object which
